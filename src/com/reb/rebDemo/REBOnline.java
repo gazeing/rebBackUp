@@ -39,6 +39,7 @@ public class REBOnline extends CordovaActivity
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
+      
         super.init();
         super.loadUrl("file:///android_asset/www/index.html");
         String appCachePath = getApplicationContext().getCacheDir().getAbsolutePath();

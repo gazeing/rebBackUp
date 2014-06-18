@@ -101,6 +101,8 @@ public class InAppBrowser extends CordovaPlugin{
         if (action.equals("open")) {
             this.callbackContext = callbackContext;
             final String url = args.getString(0);
+            
+            Log.d(LOG_TAG, "Coming to execute ======== "+url);
             String t = args.optString(1);
             if (t == null || t.equals("") || t.equals(NULL)) {
                 t = SELF;
@@ -116,6 +118,7 @@ public class InAppBrowser extends CordovaPlugin{
                     // SELF
                     if (SELF.equals(target)) {
                         Log.d(LOG_TAG, "in self");
+
                         // load in webview
                         if (url.startsWith("file://") || url.startsWith("javascript:") 
                                 || Config.isUrlWhiteListed(url)) {
@@ -415,6 +418,7 @@ public class InAppBrowser extends CordovaPlugin{
      */
     private void navigate(String url) {
     	System.out.println("Coming to navigate");
+    	Log.d(LOG_TAG, "Coming to navigate ======== "+url);
         InputMethodManager imm = (InputMethodManager)this.cordova.getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
         imm.hideSoftInputFromWindow(edittext.getWindowToken(), 0);
 
@@ -445,6 +449,7 @@ public class InAppBrowser extends CordovaPlugin{
      */
     public String showWebPage(final String url, HashMap<String, Boolean> features) {
     	System.out.println("Coming to showWebPage");
+    	Log.d(LOG_TAG, "Coming to showWebPage ======== "+url);
         // Determine if we should hide the location bar.
         //showLocationBar = true;
         // added 07/FEB/2014
@@ -653,6 +658,7 @@ public class InAppBrowser extends CordovaPlugin{
                 
                 //added by steven 10-6-2014
                 inAppWebView.addJavascriptInterface(new SocialLinkInterface(cordova.getActivity()), "SocialShare");
+                inAppWebView.addJavascriptInterface(new OpenLinkExternallyInterface(cordova.getActivity()), "OpenUrlExternally");
                 //add end
                 inAppWebView.getSettings().setLoadWithOverviewMode(true);
                 inAppWebView.getSettings().setUseWideViewPort(true);
@@ -765,6 +771,19 @@ public class InAppBrowser extends CordovaPlugin{
         	System.out.println(url);
             super.onPageStarted(view, url, favicon);
             String newloc = "";
+            //added by steven 18-06-2014
+            // if link belong to disqus, open in external browser
+            if ((url.startsWith("https://disqus.com/") )||(url.startsWith("http://disqus.com/_ax/")) 
+            		||(url.startsWith("https://www.google.com/account"))
+            		||(url.startsWith("https://accounts.google.com/"))){
+            	
+//        		Intent i = new Intent(Intent.ACTION_VIEW);
+//        		i.setData(Uri.parse(url));
+//
+//        		InAppBrowser.this.cordova.getActivity().startActivity(i);
+            	openExternal(url);
+            }else
+            //add end
             if (url.startsWith("http:") || url.startsWith("https:") || url.startsWith("file:")) {
                 newloc = url;
             } 
@@ -831,6 +850,7 @@ public class InAppBrowser extends CordovaPlugin{
                 JSONObject obj = new JSONObject();
                 obj.put("type", LOAD_START_EVENT);
                 obj.put("url", newloc);
+                Log.d(LOG_TAG, "newloc ======== "+newloc);
     
                 sendUpdate(obj, true);
             } catch (JSONException ex) {
