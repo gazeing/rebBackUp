@@ -56,6 +56,8 @@ import org.apache.cordova.PluginResult;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.reb.rebDemo.GlobalData;
+
 
 import java.util.HashMap;
 import java.util.StringTokenizer;
@@ -102,6 +104,8 @@ public class InAppBrowser extends CordovaPlugin{
             this.callbackContext = callbackContext;
             final String url = args.getString(0);
             
+   
+            
             Log.d(LOG_TAG, "Coming to execute ======== "+url);
             String t = args.optString(1);
             if (t == null || t.equals("") || t.equals(NULL)) {
@@ -138,7 +142,15 @@ public class InAppBrowser extends CordovaPlugin{
                         }
                         // load in InAppBrowser
                         else {
+                            if(GlobalData.m_Intent!=null){
+                            	String intent_url = GlobalData.m_Website_Prefix+GlobalData.m_Intent.getData().getPath();
+                            	GlobalData.m_Intent =null;
+                            	Log.i(LOG_TAG,"url from intent = "+intent_url);
+                            	result = showWebPage(intent_url, features);
+                            }else{
+                        	
                             result = showWebPage(url, features);
+                            }
                         }
                     }
                     // SYSTEM
@@ -149,7 +161,15 @@ public class InAppBrowser extends CordovaPlugin{
                     // BLANK - or anything else
                     else {
                         Log.d(LOG_TAG, "in blank");
+                        if(GlobalData.m_Intent!=null){
+                        	String intent_url = GlobalData.m_Website_Prefix+GlobalData.m_Intent.getData().getPath();
+                        	GlobalData.m_Intent =null;
+                        	Log.i(LOG_TAG,"url from intent = "+intent_url);
+                        	result = showWebPage(intent_url, features);
+                        }else{
+                    	
                         result = showWebPage(url, features);
+                        }
                       
                     }
     
@@ -620,12 +640,13 @@ public class InAppBrowser extends CordovaPlugin{
                 // WebView
                 inAppWebView = new WebView(cordova.getActivity());
                 inAppWebView.setLayoutParams(new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
-                inAppWebView.setWebChromeClient(new InAppChromeClient(thatWebView));
+                inAppWebView.setWebChromeClient(new InAppChromeClient(thatWebView,main,cordova.getActivity()));
                 WebViewClient client = new InAppBrowserClient(thatWebView, edittext);
                 inAppWebView.setWebViewClient(client);
                 WebSettings settings = inAppWebView.getSettings();
                 settings.setJavaScriptEnabled(true);
                 settings.setJavaScriptCanOpenWindowsAutomatically(true);
+                settings.setSupportMultipleWindows(true);
                 settings.setBuiltInZoomControls(true);
                 settings.setPluginState(android.webkit.WebSettings.PluginState.ON);
 
@@ -771,19 +792,19 @@ public class InAppBrowser extends CordovaPlugin{
         	System.out.println(url);
             super.onPageStarted(view, url, favicon);
             String newloc = "";
-            //added by steven 18-06-2014
-            // if link belong to disqus, open in external browser
-            if ((url.startsWith("https://disqus.com/") )||(url.startsWith("http://disqus.com/_ax/")) 
-            		||(url.startsWith("https://www.google.com/account"))
-            		||(url.startsWith("https://accounts.google.com/"))){
-            	
-//        		Intent i = new Intent(Intent.ACTION_VIEW);
-//        		i.setData(Uri.parse(url));
-//
-//        		InAppBrowser.this.cordova.getActivity().startActivity(i);
-            	openExternal(url);
-            }else
-            //add end
+//            //added by steven 18-06-2014
+//            // if link belong to disqus, open in external browser
+//            if ((url.startsWith("https://disqus.com/") )||(url.startsWith("http://disqus.com/_ax/")) 
+//            		||(url.startsWith("https://www.google.com/account"))
+//            		||(url.startsWith("https://accounts.google.com/"))){
+//            	
+////        		Intent i = new Intent(Intent.ACTION_VIEW);
+////        		i.setData(Uri.parse(url));
+////
+////        		InAppBrowser.this.cordova.getActivity().startActivity(i);
+//            	openExternal(url);
+//            }else
+//            //add end
             if (url.startsWith("http:") || url.startsWith("https:") || url.startsWith("file:")) {
                 newloc = url;
             } 

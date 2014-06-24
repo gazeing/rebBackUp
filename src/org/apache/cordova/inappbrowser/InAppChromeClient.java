@@ -6,21 +6,33 @@ import org.apache.cordova.PluginResult;
 import org.json.JSONArray;
 import org.json.JSONException;
 
+import android.content.Context;
+import android.os.Message;
+import android.util.Log;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.ViewGroup.LayoutParams;
 import android.webkit.JsPromptResult;
 import android.webkit.WebChromeClient;
 import android.webkit.WebStorage;
 import android.webkit.WebView;
 import android.webkit.GeolocationPermissions.Callback;
+import android.webkit.WebViewClient;
+import android.widget.LinearLayout;
 
 public class InAppChromeClient extends WebChromeClient {
 
     private CordovaWebView webView;
     private String LOG_TAG = "InAppChromeClient";
     private long MAX_QUOTA = 100 * 1024 * 1024;
+    private ViewGroup contentContainer;
+    private Context mContext;
 
-    public InAppChromeClient(CordovaWebView webView) {
+    public InAppChromeClient(CordovaWebView webView, ViewGroup container,Context context) {
         super();
         this.webView = webView;
+        this.mContext = context;
+        this.contentContainer = container;
         
     }
     /**
@@ -111,6 +123,28 @@ public class InAppChromeClient extends WebChromeClient {
             }
         }
         return false;
+    }
+    
+    
+    @Override
+	public boolean onCreateWindow(WebView view, boolean isDialog,
+			boolean isUserGesture, Message resultMsg) {
+		Log.i(LOG_TAG,"onCreateWindow");
+        WebView newWebView = new WebView(mContext);
+        newWebView.getSettings().setJavaScriptEnabled(true);
+        newWebView.setWebChromeClient(this);
+        newWebView.setWebViewClient(new WebViewClient());
+        newWebView.setLayoutParams(new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+        contentContainer.addView(newWebView);
+        WebView.WebViewTransport transport = (WebView.WebViewTransport) resultMsg.obj;
+        transport.setWebView(newWebView);
+        resultMsg.sendToTarget();
+        return true;
+//		return super.onCreateWindow(view, isDialog, isUserGesture, resultMsg);
+	}
+	@Override
+    public void onShowCustomView (View view, WebChromeClient.CustomViewCallback callback){
+    	Log.i(LOG_TAG, "onShowCustomView"); 
     }
 
 }

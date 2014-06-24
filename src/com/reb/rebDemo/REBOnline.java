@@ -20,11 +20,13 @@
 package com.reb.rebDemo;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Point;
 import org.apache.cordova.*;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Display;
 import android.view.WindowManager;
 import android.webkit.WebSettings;
@@ -95,5 +97,21 @@ public class REBOnline extends CordovaActivity
         super.appView.getSettings().setDomStorageEnabled(true);
         super.appView.getSettings().setAppCachePath(appCachePath);
         super.appView.getSettings().setAllowFileAccess(true);
+        
+        handleIntent(getIntent());
     }
+	private void handleIntent(Intent intent) {
+		if(intent!= null){
+			if(intent.getAction().equals(Intent.ACTION_VIEW)){
+				Log.i("Intent",intent.getData().getPath());
+				int i =0;
+				for(String pathseg : intent.getData().getPathSegments()){
+					Log.i("Intent","getPathSegments  "+(i++)+" = "+pathseg);
+				}
+				GlobalData.m_Intent = intent;
+//				super.appView.loadUrl("http://www.rebonline.com.au"+intent.getData().getPath());
+			}
+		}
+		
+	}
 }
