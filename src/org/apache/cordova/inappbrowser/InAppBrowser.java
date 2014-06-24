@@ -44,7 +44,6 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.Config;
@@ -79,6 +78,17 @@ public class InAppBrowser extends CordovaPlugin{
     private static final String CLOSE_BUTTON_CAPTION = "closebuttoncaption";
     private static final String CLEAR_ALL_CACHE = "clearcache";
     private static final String CLEAR_SESSION_CACHE = "clearsessioncache";
+    
+    
+    private static final int LAYOUT_ID_TOOLBAR 											= 10;
+    private static final int LAYOUT_ID_ACTION_BUTTON 									= 1;
+    private static final int LAYOUT_ID_BACK_BUTTON 										= 2;
+    private static final int LAYOUT_ID_FORWARD_BUTTON									= 3;
+    private static final int LAYOUT_ID_TEXT_BOX											= 4;
+    private static final int LAYOUT_ID_CLOSE_BUTTON										= 5;
+    private static final int LAYOUT_ID_MAIN_WEBVIEW 									= 6;
+    
+    private InAppChromeClient mAppChromeClient = null;
 
     private Dialog dialog;
     private WebView inAppWebView;
@@ -405,6 +415,13 @@ public class InAppBrowser extends CordovaPlugin{
         }
         
     }
+    
+
+	private void closePopupWebView() {
+		if(mAppChromeClient != null)
+		mAppChromeClient.closeChild();
+		
+	}
 
     /**
      * Checks to see if it is possible to go back one page in history, then does so.
@@ -412,7 +429,13 @@ public class InAppBrowser extends CordovaPlugin{
     //added on 15/05/2014 - changed return type from void to boolean 
     private boolean goBack() {
     	System.out.println("Coming to goBack");
-        if (this.inAppWebView.canGoBack()) {
+    	if(this.mAppChromeClient != null){
+	    	if(this.mAppChromeClient.isChildOpen()){
+	    		this.mAppChromeClient.closeChild();
+	    		return true;
+	    	}
+    	}
+    	if (this.inAppWebView.canGoBack()) {
             this.inAppWebView.goBack();
             //added on 15/05/2014
             return true;
@@ -480,7 +503,8 @@ public class InAppBrowser extends CordovaPlugin{
             if (show != null) {
                 showLocationBar = show.booleanValue();
               //added 07/FEB/2014
-            	showLocationBar = false;
+                //comment out by steven 24-06-2014
+//            	showLocationBar = false;
             }
             Boolean hidden = features.get(HIDDEN);
             if (hidden != null) {
@@ -548,28 +572,41 @@ public class InAppBrowser extends CordovaPlugin{
 					}
 				});
 
+
+                
+                
+                
                 // Main container layout
-                LinearLayout main = new LinearLayout(cordova.getActivity());
-                main.setOrientation(LinearLayout.VERTICAL);
+                RelativeLayout main = new RelativeLayout(cordova.getActivity());
+//                main.setOrientation(LinearLayout.VERTICAL);
+                
+  
+                
 
                 // Toolbar layout
                RelativeLayout toolbar = new RelativeLayout(cordova.getActivity());
                 //Please, no more black! 
                 toolbar.setBackgroundColor(android.graphics.Color.parseColor("#282A79"));
-                toolbar.setLayoutParams(new RelativeLayout.LayoutParams(LayoutParams.MATCH_PARENT, this.dpToPixels(44)));
+                RelativeLayout.LayoutParams toolbar_LayoutParams = new RelativeLayout.LayoutParams(LayoutParams.MATCH_PARENT, this.dpToPixels(44));
+                toolbar_LayoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+                toolbar.setLayoutParams(toolbar_LayoutParams);
                 toolbar.setPadding(this.dpToPixels(2), this.dpToPixels(2), this.dpToPixels(2), this.dpToPixels(2));
                 toolbar.setHorizontalGravity(Gravity.LEFT);
-                toolbar.setVerticalGravity(Gravity.TOP);
+                toolbar.setVerticalGravity(Gravity.BOTTOM);
+                toolbar.setId(LAYOUT_ID_TOOLBAR);
+               
                 
                // added 07/FEB/2014
                 //toolbar.setVisibility(toolbar.INVISIBLE);
 
                 // Action Button Container layout
                 RelativeLayout actionButtonContainer = new RelativeLayout(cordova.getActivity());
-                actionButtonContainer.setLayoutParams(new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
+                RelativeLayout.LayoutParams actionButtonContainerLayout = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+                actionButtonContainerLayout.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+                actionButtonContainer.setLayoutParams(actionButtonContainerLayout);
                 actionButtonContainer.setHorizontalGravity(Gravity.LEFT);
                 actionButtonContainer.setVerticalGravity(Gravity.CENTER_VERTICAL);
-                actionButtonContainer.setId(1);
+                actionButtonContainer.setId(LAYOUT_ID_ACTION_BUTTON);
 
                 // Back button
                 Button back = new Button(cordova.getActivity());
@@ -578,7 +615,7 @@ public class InAppBrowser extends CordovaPlugin{
                 back.setLayoutParams(backLayoutParams);
                 back.setBackgroundColor(android.graphics.Color.parseColor("#282A79"));
                 back.setContentDescription("Back Button");
-                back.setId(2);
+                back.setId(LAYOUT_ID_BACK_BUTTON);
                 back.setText("<");
                 back.setOnClickListener(new View.OnClickListener() {
                     public void onClick(View v) {
@@ -589,10 +626,10 @@ public class InAppBrowser extends CordovaPlugin{
                 // Forward button
                 Button forward = new Button(cordova.getActivity());
                 RelativeLayout.LayoutParams forwardLayoutParams = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.MATCH_PARENT);
-                forwardLayoutParams.addRule(RelativeLayout.RIGHT_OF, 2);
+                forwardLayoutParams.addRule(RelativeLayout.RIGHT_OF, LAYOUT_ID_BACK_BUTTON);
                 forward.setLayoutParams(forwardLayoutParams);
                 forward.setContentDescription("Forward Button");
-                forward.setId(3);
+                forward.setId(LAYOUT_ID_FORWARD_BUTTON);
                 forward.setText(">");
                 forward.setOnClickListener(new View.OnClickListener() {
                     public void onClick(View v) {
@@ -603,10 +640,10 @@ public class InAppBrowser extends CordovaPlugin{
                 // Edit Text Box
                 edittext = new EditText(cordova.getActivity());
                 RelativeLayout.LayoutParams textLayoutParams = new RelativeLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
-                textLayoutParams.addRule(RelativeLayout.RIGHT_OF, 1);
-                textLayoutParams.addRule(RelativeLayout.LEFT_OF, 5);
+                textLayoutParams.addRule(RelativeLayout.RIGHT_OF, LAYOUT_ID_CLOSE_BUTTON);
+                textLayoutParams.addRule(RelativeLayout.LEFT_OF, LAYOUT_ID_ACTION_BUTTON);
                 edittext.setLayoutParams(textLayoutParams);
-                edittext.setId(4);
+                edittext.setId(LAYOUT_ID_TEXT_BOX);
                 edittext.setSingleLine(true);
                 edittext.setText(url);
                 edittext.setInputType(InputType.TYPE_TEXT_VARIATION_URI);
@@ -626,28 +663,41 @@ public class InAppBrowser extends CordovaPlugin{
                 // Close button
                 Button close = new Button(cordova.getActivity());
                 RelativeLayout.LayoutParams closeLayoutParams = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.MATCH_PARENT);
-                closeLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+                closeLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
                 close.setLayoutParams(closeLayoutParams);
                 forward.setContentDescription("Close Button");
-                close.setId(5);
+                close.setId(LAYOUT_ID_CLOSE_BUTTON);
                 close.setText(buttonLabel);
                 close.setOnClickListener(new View.OnClickListener() {
                     public void onClick(View v) {
-                        closeDialog();
+//                        closeDialog();
+                    	closePopupWebView();
                     }
+
                 });
+                
+                //create popup view container layout
+                RelativeLayout browserLayout = new RelativeLayout(cordova.getActivity()); 
+                browserLayout.setBackgroundColor(android.graphics.Color.parseColor("#282A79"));
+                RelativeLayout.LayoutParams browser_LayoutParams = new RelativeLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
+                browser_LayoutParams.addRule(RelativeLayout.ABOVE,LAYOUT_ID_TOOLBAR);
+                browserLayout.setLayoutParams(browser_LayoutParams);
+
 
                 // WebView
                 inAppWebView = new WebView(cordova.getActivity());
-                inAppWebView.setLayoutParams(new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
-                inAppWebView.setWebChromeClient(new InAppChromeClient(thatWebView,main,cordova.getActivity()));
+                RelativeLayout.LayoutParams webview_LayoutParams = new RelativeLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
+                webview_LayoutParams.addRule(RelativeLayout.ABOVE,LAYOUT_ID_TOOLBAR);
+                inAppWebView.setLayoutParams(webview_LayoutParams);
+                mAppChromeClient = new InAppChromeClient(thatWebView,browserLayout,toolbar,cordova.getActivity());
+                inAppWebView.setWebChromeClient(mAppChromeClient);
                 WebViewClient client = new InAppBrowserClient(thatWebView, edittext);
                 inAppWebView.setWebViewClient(client);
                 WebSettings settings = inAppWebView.getSettings();
                 settings.setJavaScriptEnabled(true);
                 settings.setJavaScriptCanOpenWindowsAutomatically(true);
                 settings.setSupportMultipleWindows(true);
-                settings.setBuiltInZoomControls(true);
+                settings.setBuiltInZoomControls(false);
                 settings.setPluginState(android.webkit.WebSettings.PluginState.ON);
 
                 //Toggle whether this is enabled or not!
@@ -666,16 +716,8 @@ public class InAppBrowser extends CordovaPlugin{
                     CookieManager.getInstance().removeSessionCookie();
                 }
                 
-                // added 04/MAR/2014
-                System.out.println("final b4: "+ inAppWebView.getSettings().getUserAgentString());
-                
-                inAppWebView.getSettings().setUserAgentString(inAppWebView.getSettings().getUserAgentString()+" mobileapp");
-                
-                System.out.println("final after: "+ inAppWebView.getSettings().getUserAgentString());
-                System.out.println("url = : "+ url);
-                
-                inAppWebView.loadUrl(url);
-                inAppWebView.setId(6);
+
+                inAppWebView.setId(LAYOUT_ID_MAIN_WEBVIEW);
                 
                 //added by steven 10-6-2014
                 inAppWebView.addJavascriptInterface(new SocialLinkInterface(cordova.getActivity()), "SocialShare");
@@ -695,21 +737,39 @@ public class InAppBrowser extends CordovaPlugin{
                 actionButtonContainer.addView(forward);
 
                 // Add the views to our toolbar
+                toolbar.addView(close);
                 toolbar.addView(actionButtonContainer);
                 toolbar.addView(edittext);
-                toolbar.addView(close);
+               
 
-                // Don't add the toolbar if its been disabled
-                if (getShowLocationBar()) {
-                    // Add our toolbar to our main view/layout
-                    main.addView(toolbar);
-                }
 
-             
-                
+
+   
                 
                 // Add our webview to our main view/layout
                 main.addView(inAppWebView);
+                main.addView(toolbar);
+                
+                // Don't add the toolbar if its been disabled
+                if (!getShowLocationBar()) {
+                    // Add our toolbar to our main view/layout
+                    toolbar.setVisibility(View.GONE);
+                }
+                main.addView(browserLayout);
+                browserLayout.setVisibility(View.INVISIBLE);
+                
+                // added 04/MAR/2014
+                System.out.println("final b4: "+ inAppWebView.getSettings().getUserAgentString());
+                
+                inAppWebView.getSettings().setUserAgentString(inAppWebView.getSettings().getUserAgentString()+" mobileapp");
+                
+                System.out.println("final after: "+ inAppWebView.getSettings().getUserAgentString());
+                System.out.println("url = : "+ url);
+                
+                inAppWebView.loadUrl(url);
+                
+                
+ 
 
                 WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
                 lp.copyFrom(dialog.getWindow().getAttributes());
