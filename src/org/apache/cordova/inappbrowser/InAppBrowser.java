@@ -25,6 +25,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.InputType;
@@ -45,6 +46,8 @@ import android.webkit.WebViewClient;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
+
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.Config;
 import org.apache.cordova.CordovaArgs;
@@ -682,6 +685,26 @@ public class InAppBrowser extends CordovaPlugin{
                 RelativeLayout.LayoutParams browser_LayoutParams = new RelativeLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
                 browser_LayoutParams.addRule(RelativeLayout.ABOVE,LAYOUT_ID_TOOLBAR);
                 browserLayout.setLayoutParams(browser_LayoutParams);
+                
+                
+                
+                // Add the back and forward buttons to our action button container layout
+                actionButtonContainer.addView(back);
+                actionButtonContainer.addView(forward);
+                
+                
+                //added by steven 25-06-2014
+                //add a text "loading" to popupview
+                
+                TextView loadTextView = new TextView(cordova.getActivity());
+                loadTextView.setTextAppearance(cordova.getActivity(), android.R.style.TextAppearance_Large);
+                loadTextView.setVisibility(View.GONE);
+                loadTextView.setText("Loading...");
+                loadTextView.setTextColor(Color.BLACK);
+                RelativeLayout.LayoutParams loadTextView_LayoutParams = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+                loadTextView_LayoutParams.addRule(RelativeLayout.CENTER_IN_PARENT);
+                loadTextView.setLayoutParams(loadTextView_LayoutParams);
+                
 
 
                 // WebView
@@ -689,7 +712,7 @@ public class InAppBrowser extends CordovaPlugin{
                 RelativeLayout.LayoutParams webview_LayoutParams = new RelativeLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
                 webview_LayoutParams.addRule(RelativeLayout.ABOVE,LAYOUT_ID_TOOLBAR);
                 inAppWebView.setLayoutParams(webview_LayoutParams);
-                mAppChromeClient = new InAppChromeClient(thatWebView,browserLayout,toolbar,cordova.getActivity());
+                mAppChromeClient = new InAppChromeClient(thatWebView,browserLayout,toolbar,loadTextView,cordova.getActivity());
                 inAppWebView.setWebChromeClient(mAppChromeClient);
                 WebViewClient client = new InAppBrowserClient(thatWebView, edittext);
                 inAppWebView.setWebViewClient(client);
@@ -731,10 +754,7 @@ public class InAppBrowser extends CordovaPlugin{
                 
                
                 
-                
-                // Add the back and forward buttons to our action button container layout
-                actionButtonContainer.addView(back);
-                actionButtonContainer.addView(forward);
+   
 
                 // Add the views to our toolbar
                 toolbar.addView(close);
@@ -757,6 +777,8 @@ public class InAppBrowser extends CordovaPlugin{
                 }
                 main.addView(browserLayout);
                 browserLayout.setVisibility(View.INVISIBLE);
+                
+                main.addView(loadTextView);
                 
                 // added 04/MAR/2014
                 System.out.println("final b4: "+ inAppWebView.getSettings().getUserAgentString());
@@ -789,6 +811,9 @@ public class InAppBrowser extends CordovaPlugin{
         this.cordova.getActivity().runOnUiThread(runnable);
         return "";
     }
+    
+    
+   
     
 
 

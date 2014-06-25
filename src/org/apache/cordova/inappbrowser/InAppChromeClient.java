@@ -7,6 +7,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.os.Message;
 import android.util.Log;
 import android.view.View;
@@ -29,14 +30,16 @@ public class InAppChromeClient extends WebChromeClient {
     private long MAX_QUOTA = 100 * 1024 * 1024;
     private ViewGroup contentContainer;
     private ViewGroup toolbar;
+    private View loadingText;
     private Context mContext;
 
-    public InAppChromeClient(CordovaWebView webView, ViewGroup container,ViewGroup toolb,Context context) {
+    public InAppChromeClient(CordovaWebView webView, ViewGroup container,ViewGroup toolb,View load,Context context) {
         super();
         this.webView = webView;
         this.mContext = context;
         this.contentContainer = container;
         this.toolbar = toolb;
+        this.loadingText= load;
         
     }
     /**
@@ -129,6 +132,16 @@ public class InAppChromeClient extends WebChromeClient {
         return false;
     }
     
+    private void setShowLoadingView(boolean bShow){
+    	if(loadingText != null){
+    		if(bShow){
+    			loadingText.setVisibility(View.VISIBLE);
+    		}else{
+    			loadingText.setVisibility(View.GONE);
+    		}
+    	}
+    }
+    
     
     @Override
 	public boolean onCreateWindow(WebView view, boolean isDialog,
@@ -142,6 +155,25 @@ public class InAppChromeClient extends WebChromeClient {
         newWebView.getSettings().setJavaScriptEnabled(true);
         newWebView.setWebChromeClient(this);
         newWebView.setWebViewClient(new WebViewClient(){
+
+			@Override
+			public void onPageStarted(WebView view, String url, Bitmap favicon) {
+				setShowLoadingView(true);
+				super.onPageStarted(view, url, favicon);
+			}
+
+			@Override
+			public void onPageFinished(WebView view, String url) {
+				setShowLoadingView(false);
+				super.onPageFinished(view, url);
+			}
+
+			@Override
+			public void onReceivedError(WebView view, int errorCode,
+					String description, String failingUrl) {
+				
+				super.onReceivedError(view, errorCode, description, failingUrl);
+			}
         	
  
         });
@@ -206,5 +238,11 @@ public class InAppChromeClient extends WebChromeClient {
     public void onShowCustomView (View view, WebChromeClient.CustomViewCallback callback){
     	Log.i(LOG_TAG, "onShowCustomView"); 
     }
+	@Override
+	public void onProgressChanged(WebView view, int newProgress) {
+		// TODO Auto-generated method stub
+		super.onProgressChanged(view, newProgress);
+	}
 
+	
 }
