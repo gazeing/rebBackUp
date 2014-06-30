@@ -722,6 +722,15 @@ public class InAppBrowser extends CordovaPlugin{
                 settings.setSupportMultipleWindows(true);
                 settings.setBuiltInZoomControls(false);
                 settings.setPluginState(android.webkit.WebSettings.PluginState.ON);
+                
+                String appCachePath = cordova.getActivity().getApplicationContext().getCacheDir().getAbsolutePath();
+//                Log.i(LOG_TAG,"appCachePath = "+cordova.getActivity().getApplicationContext().getCacheDir().getAbsolutePath());
+                settings.setAppCacheEnabled(true);
+                settings.setCacheMode(WebSettings.LOAD_DEFAULT);
+                settings.setDomStorageEnabled(true);
+                settings.setAppCachePath(appCachePath);
+                settings.setAllowFileAccess(true);
+                Log.i(LOG_TAG,"appCachePath ========>"+appCachePath);
 
                 //Toggle whether this is enabled or not!
                 Bundle appSettings = cordova.getActivity().getIntent().getExtras();

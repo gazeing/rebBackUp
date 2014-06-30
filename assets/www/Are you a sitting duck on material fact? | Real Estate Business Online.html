@@ -1957,7 +1957,7 @@
                     <div id="div-gpt-ad-1384909776605-0-oop_ad_container">
                         <div id="onthehouse" style="position:absolute;z-index: 99999;left: 50%;top: 10%;margin-left:-325px">
                             <img src="Are%20you%20a%20sitting%20duck%20on%20material%20fact%3F%20%7C%20Real%20Estate%20Business%20Online_files/imgad.png" style="position:absolute;right: 0;" onclick='jQuery("#onthehouse").css("display","none")'>
-                            <a onclick="openUrlExternally('http://adclick.g.doubleclick.net/aclk?sa=L&amp;ai=BD9LYEkGWU7v5OJC18AX_mIG4Cvq5kbcEAAAAEAEg-qj1HjgAWPL3poSVAWCl-JGAkAGyARR3d3cucmVib25saW5lLmNvbS5hdboBCWdmcF9pbWFnZcgBCdoBTWh0dHA6Ly93d3cucmVib25saW5lLmNvbS5hdS9ibG9nLzc3MzctYXJlLXlvdS1hLXNpdHRpbmctZHVjay1vbi1tYXRlcmlhbC1mYWN0qQIeHnTXul6vPsACAuACAOoCGi81MDgwNzMzMC9SRUJfRmxvYXRpbmdfMXgx-AKC0h6AAwGQA6gKmAOoCqgDAeAEAaAGIA&amp;num=0&amp;sig=AOD64_2Zy1vT8_8m_NfGAFBkgk5N1DTa5A&amp;client=ca-pub-8734623228020226&amp;adurl=http://www.console.com.au/products/special-offers/%3Fcid%3Drebpup-wc14')">
+                            <a onclick="openUrlExternallyAndCloseAd('http://adclick.g.doubleclick.net/aclk?sa=L&amp;ai=BD9LYEkGWU7v5OJC18AX_mIG4Cvq5kbcEAAAAEAEg-qj1HjgAWPL3poSVAWCl-JGAkAGyARR3d3cucmVib25saW5lLmNvbS5hdboBCWdmcF9pbWFnZcgBCdoBTWh0dHA6Ly93d3cucmVib25saW5lLmNvbS5hdS9ibG9nLzc3MzctYXJlLXlvdS1hLXNpdHRpbmctZHVjay1vbi1tYXRlcmlhbC1mYWN0qQIeHnTXul6vPsACAuACAOoCGi81MDgwNzMzMC9SRUJfRmxvYXRpbmdfMXgx-AKC0h6AAwGQA6gKmAOoCqgDAeAEAaAGIA&amp;num=0&amp;sig=AOD64_2Zy1vT8_8m_NfGAFBkgk5N1DTa5A&amp;client=ca-pub-8734623228020226&amp;adurl=http://www.console.com.au/products/special-offers/%3Fcid%3Drebpup-wc14')">
                                 <img src="Are%20you%20a%20sitting%20duck%20on%20material%20fact%3F%20%7C%20Real%20Estate%20Business%20Online_files/adview.gif">
                             </a>
                         </div>
@@ -2660,13 +2660,32 @@
 
                                             bridgeRef = bridge;
         
-                                        })
+                                        });
 
-                                        function openUrlExternally(_urlex){
+                                        function openUrlExternallyAndCloseAd(_urlex){
                                             localStorage.setItem("urlex",_urlex);
+                                            jQuery("#onthehouse").css("display","none");
 
-                                            if(OpenUrlExternally!==null){OpenUrlExternally.openUrlLinkExternal(_urlex);
-                                                alert('hello');jQuery("#onthehouse").css("display","none")}
+                                            document.getElementById("openButton").value= "opened" ;
+
+                                             if (bridgeRef !== null) {
+
+
+                                                   var obj = new Object();
+                                                   obj.shareAction = "openExternal";
+                                                   obj.msg  = "";
+                                                   obj.shareTitle = "";
+                                                   obj.shareURL = _urlex;
+                                                   var jsonString= JSON.stringify(obj);
+
+                                                bridgeRef.send(jsonString);
+
+                                                }
+
+                                            if(OpenUrlExternally!==null){
+                                                OpenUrlExternally.openUrlLinkExternal(_urlex);
+                                                
+                                            }
                                         }
 
                                         function shareMessage(_social, _msg) {
@@ -2702,7 +2721,7 @@
  
                                         <p><input  class="button black" id="ShowButton" type="button" value="Share"  onclick = "shareMessage('','')"/></p>
 
-                                         <p><input  class="button black" id="openButton" type="button" value="open"  onclick = "openUrlExternally('www.google.com')"/></p>
+                                         <p><input  class="button black" id="openButton" type="button" value="open"  onclick = "openUrlExternallyAndCloseAd('www.google.com')"/></p>
 
 
 

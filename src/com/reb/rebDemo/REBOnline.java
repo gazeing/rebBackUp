@@ -43,7 +43,7 @@ public class REBOnline extends CordovaActivity
         super.onCreate(savedInstanceState);
       
         super.init();
-        super.loadUrl("file:///android_asset/www/index.html");
+        
         String appCachePath = getApplicationContext().getCacheDir().getAbsolutePath();
         System.out.println("AppCache --> "+ appCachePath);
         try {
@@ -97,6 +97,8 @@ public class REBOnline extends CordovaActivity
         super.appView.getSettings().setDomStorageEnabled(true);
         super.appView.getSettings().setAppCachePath(appCachePath);
         super.appView.getSettings().setAllowFileAccess(true);
+        
+        super.loadUrl("file:///android_asset/www/index.html");
         
         handleIntent(getIntent());
     }
