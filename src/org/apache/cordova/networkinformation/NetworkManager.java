@@ -25,6 +25,8 @@ import org.apache.cordova.PluginResult;
 import org.apache.cordova.CordovaWebView;
 import org.json.JSONArray;
 
+import com.reb.rebDemo.GlobalData;
+
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -202,6 +204,14 @@ public class NetworkManager extends CordovaPlugin {
             result.setKeepCallback(true);
             connectionCallbackContext.sendPluginResult(result);
         }
+        
+        //added by steven 01-07-14 to notify out network status change
+        if(GlobalData.m_InAppBrowser!=null){
+        	GlobalData.m_InAppBrowser.updateNetworkStatus(type);
+        }
+        
+        
+        
         webView.postMessage("networkconnection", type);
     }
     /**

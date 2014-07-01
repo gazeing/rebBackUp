@@ -26,6 +26,8 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.InputType;
@@ -40,6 +42,7 @@ import android.view.WindowManager.LayoutParams;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.webkit.CookieManager;
+import android.webkit.WebBackForwardList;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -262,6 +265,11 @@ public class InAppBrowser extends CordovaPlugin{
      * Stop listener.
      */
     public void onDestroy() {
+    	//added by steven
+    	GlobalData.m_InAppBrowser = null;
+    	
+    	
+    	
     	System.out.println("Coming to onDestroy");
         closeDialog();
     }
@@ -391,6 +399,9 @@ public class InAppBrowser extends CordovaPlugin{
      * Closes the dialog
      */
     public void closeDialog() {
+    	
+    	
+    	
     	StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
     	System.out.println("Stack Trace: "+stackTraceElements);
     	System.out.println("Coming to closeDialog");
@@ -525,6 +536,10 @@ public class InAppBrowser extends CordovaPlugin{
         }
         
         final CordovaWebView thatWebView = this.webView;
+        
+        
+        //added by steven
+        GlobalData.m_InAppBrowser = this;
 
         // Create dialog in new thread
         Runnable runnable = new Runnable() {
@@ -726,7 +741,9 @@ public class InAppBrowser extends CordovaPlugin{
                 String appCachePath = cordova.getActivity().getApplicationContext().getCacheDir().getAbsolutePath();
 //                Log.i(LOG_TAG,"appCachePath = "+cordova.getActivity().getApplicationContext().getCacheDir().getAbsolutePath());
                 settings.setAppCacheEnabled(true);
-                settings.setCacheMode(WebSettings.LOAD_DEFAULT);
+                
+                
+                settings.setCacheMode(isNetworkAvailable() ?WebSettings.LOAD_DEFAULT:WebSettings.LOAD_CACHE_ELSE_NETWORK);
                 settings.setDomStorageEnabled(true);
                 settings.setAppCachePath(appCachePath);
                 settings.setAllowFileAccess(true);
@@ -862,7 +879,11 @@ public class InAppBrowser extends CordovaPlugin{
     public class InAppBrowserClient extends WebViewClient {
         EditText edittext;
         CordovaWebView webView;
+        
+        String urlReload; //added by steven. to ensure cache page only be reload once when it does not exist
 
+        AlertDialog alertDialog;
+        WebView viewRef;
         /**
          * Constructor.
          *
@@ -872,9 +893,39 @@ public class InAppBrowser extends CordovaPlugin{
         public InAppBrowserClient(CordovaWebView webView, EditText mEditText) {
             this.webView = webView;
             this.edittext = mEditText;
+            this.urlReload = "";
+            this.alertDialog = new AlertDialog.Builder(cordova.getActivity()).create();
+            this.viewRef = null;
+           
         }
 
-        /**
+		/**
+         * Give the host application a chance to take over the control when a new url is about to be loaded in the current WebView.
+         *
+         * @param view          The webview initiating the callback.
+         * @param url           The url of the page.
+         */
+        
+//        @Override
+//		public boolean shouldOverrideUrlLoading(WebView view, String url) {
+//        	System.out.println("^^^^^^^^^^^^^^^^ shouldOverrideUrlLoading");
+//            //added by steven 18-06-2014
+//            //if the link is ad, open in external browser
+////            if(url.contains("adclick.g.doubleclick.net")){
+//////            	view.stopLoading();
+//////            	if(view.canGoBack()){
+//////            	view.goBack();
+//////            	view.goForward();
+//////            	}
+////            	openExternal(url);
+////            	return true;
+////            }
+//			return super.shouldOverrideUrlLoading(view, url);
+//		}
+
+
+
+		/**
          * Notify the host application that a page has started loading.
          *
          * @param view          The webview initiating the callback.
@@ -886,7 +937,7 @@ public class InAppBrowser extends CordovaPlugin{
         	System.out.println(url);
             super.onPageStarted(view, url, favicon);
             String newloc = "";
-//            //added by steven 18-06-2014
+
 //            // if link belong to disqus, open in external browser
 //            if ((url.startsWith("https://disqus.com/") )||(url.startsWith("http://disqus.com/_ax/")) 
 //            		||(url.startsWith("https://www.google.com/account"))
@@ -973,7 +1024,13 @@ public class InAppBrowser extends CordovaPlugin{
             }
         }
         
+        
+        
         public void onPageFinished(WebView view, String url) {
+        	
+//        	isCacheReloaded = false;
+        	
+        	
         	System.out.println("Coming to onPageFinished");
         	System.out.println(url);
             super.onPageFinished(view, url);
@@ -992,7 +1049,48 @@ public class InAppBrowser extends CordovaPlugin{
         public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
         	System.out.println("Coming to onReceivedError");
         	System.out.println(failingUrl);
+        	Log.i(LOG_TAG,"=====Coming to onReceivedError: "+failingUrl+"====errorCode===="+errorCode);
         	//closeDialog();
+        	
+        	
+        	//added by steven 01-07-14 to deal with the error responce, force webview to use cache
+        	if(!isNetworkAvailable()){
+        	
+	        	this.viewRef = view;
+	        	
+	            try {
+	            	view.stopLoading();
+	            } catch (Exception e) {
+	            }
+//	            try {
+//	            	view.loadUrl("about:blank") ;
+//	            } catch (Exception e) {
+//	            }
+//	            if (view.canGoBack()) {
+//	            	view.goBack();
+//	            }
+
+	
+	            this.viewRef = view;
+	            alertDialog.setTitle("Oops!");
+	            alertDialog.setMessage("This page cannot be browsed in offline mode! Please use back key to go Back.");
+	            alertDialog.setButton(DialogInterface.BUTTON_NEUTRAL,"OK", new DialogInterface.OnClickListener() {
+	               public void onClick(DialogInterface dialog, int which) {
+	
+	            	   if(viewRef!=null){
+//	            		   while(viewRef.getUrl().equals("about:blank")){
+		            		   if(viewRef.canGoBack())
+		            			   	viewRef.goBack();
+//	            		   }
+//	            		   goBackInWebView(viewRef);
+	            	   }
+	            	   alertDialog.dismiss();
+	               }
+	            });
+	
+	            alertDialog.show();
+        	}
+
             super.onReceivedError(view, errorCode, description, failingUrl);
             
             try {
@@ -1009,4 +1107,59 @@ public class InAppBrowser extends CordovaPlugin{
         	
         }
     }
+    
+    public void goBackInWebView(WebView wv){
+        WebBackForwardList history = webView.copyBackForwardList();
+        int index = -1;
+        String url = null;
+
+        try{
+	        while (wv.canGoBackOrForward(index)) {
+	              if (!history.getItemAtIndex(history.getCurrentIndex() + index).getUrl().equals("about:blank")) {
+	            	  wv.goBackOrForward(index);
+	                 url = history.getItemAtIndex(-index).getUrl();
+	                 Log.e("tag","first non empty" + url);
+	                 break;
+	               }
+	               index --;
+	
+	        }
+        }catch(Exception e){
+//        	Log.i(LOG_TAG,e.getCause().toString());
+        }
+//       // no history found that is not empty
+//       if (url == null) {
+//          finish();
+//       }
+
+    }
+
+
+    private boolean isNetworkAvailable() {
+    	  boolean isConnected = false;
+    	  ConnectivityManager check = (ConnectivityManager)cordova.getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
+    	  if (check != null){ 
+    	    NetworkInfo[] info = check.getAllNetworkInfo();
+    	    if (info != null){
+    	     for (int i = 0; i <info.length; i++){
+    	       if (info[i].getState() == NetworkInfo.State.CONNECTED){
+    	         isConnected = true;
+    	       }
+    	     }
+    	    }
+    	  }
+    	    return isConnected;
+    	  
+    	 }
+
+	public void updateNetworkStatus(String type) {
+		Log.i(LOG_TAG,"============>  type ="+type);
+		
+		if(type.equals("none")){
+			this.inAppWebView.getSettings().setCacheMode(WebSettings.LOAD_CACHE_ELSE_NETWORK);
+		}else{
+			this.inAppWebView.getSettings().setCacheMode(WebSettings.LOAD_DEFAULT);
+		}
+		
+	}
 }

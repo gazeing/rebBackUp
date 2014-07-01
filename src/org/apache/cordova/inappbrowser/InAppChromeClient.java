@@ -244,5 +244,6 @@ public class InAppChromeClient extends WebChromeClient {
 		super.onProgressChanged(view, newProgress);
 	}
 
+
 	
 }

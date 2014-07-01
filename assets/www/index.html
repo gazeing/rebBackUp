@@ -304,7 +304,8 @@
 								//alert(GCMRegId);
 								jsScript="localStorage.setItem('registrationId','"+GCMRegId+"');";
 								if(Connection.NONE===navigator.connection.type){
-									jsScript="alert('No Network Connection.');";
+                  console.log('No Network Connection. Google Cloud Messaging stop working.');
+									// jsScript="alert('No Network Connection. Google Cloud Messaging stop working.');";
 								}
 								ref.executeScript({ code: jsScript });
 								ref.show();
