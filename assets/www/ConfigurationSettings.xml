@@ -1,6 +1,7 @@
 <settings>
     <!-- <loadURL>Are%20you%20a%20sitting%20duck%20on%20material%20fact%3f%20|%20Real%20Estate%20Business%20Online.html</loadURL> -->
 	<!--<loadURL>http://www.rebonline.com.au/steven/testi/Are%20you%20a%20sitting%20duck%20on%20material%20fact%3f%20|%20Real%20Estate%20Business%20Online.html</loadURL> -->
+	<!-- <loadURL>http://www.rebonline.com.au/steven/server.php</loadURL>  -->
 	<loadURL>http://www.rebonline.com.au/app</loadURL>
 	<!-- <loadURL>http://sydneytoday.com/m/</loadURL> -->
 	<GCMsenderID>700512604955</GCMsenderID>
