@@ -26,6 +26,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.Point;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
@@ -33,6 +34,7 @@ import android.os.Bundle;
 import android.text.InputType;
 import android.util.Log;
 import android.util.TypedValue;
+import android.view.Display;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
@@ -738,6 +740,9 @@ public class InAppBrowser extends CordovaPlugin{
                 settings.setBuiltInZoomControls(false);
                 settings.setPluginState(android.webkit.WebSettings.PluginState.ON);
                 
+
+
+                
                 String appCachePath = cordova.getActivity().getApplicationContext().getCacheDir().getAbsolutePath();
 //                Log.i(LOG_TAG,"appCachePath = "+cordova.getActivity().getApplicationContext().getCacheDir().getAbsolutePath());
                 settings.setAppCacheEnabled(true);
@@ -772,11 +777,13 @@ public class InAppBrowser extends CordovaPlugin{
                 inAppWebView.addJavascriptInterface(new SocialLinkInterface(cordova.getActivity()), "SocialShare");
                 inAppWebView.addJavascriptInterface(new OpenLinkExternallyInterface(cordova.getActivity()), "OpenUrlExternally");
                 //add end
-                inAppWebView.getSettings().setLoadWithOverviewMode(true);
+                
+                //removed by steven 2-7-14 for the 4.1 version not show zoom correctly
+//                inAppWebView.getSettings().setLoadWithOverviewMode(true);
                 inAppWebView.getSettings().setUseWideViewPort(true);
                 inAppWebView.requestFocus();
                 inAppWebView.requestFocusFromTouch();
-                
+
                 
                
                 
@@ -815,6 +822,7 @@ public class InAppBrowser extends CordovaPlugin{
                 System.out.println("url = : "+ url);
                 
                 inAppWebView.loadUrl(url);
+
                 
                 
  
@@ -839,7 +847,7 @@ public class InAppBrowser extends CordovaPlugin{
     }
     
     
-   
+
     
 
 
