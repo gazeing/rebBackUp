@@ -39,17 +39,45 @@
     		android:debuggable="true" 
     		android:hardwareAccelerated="true" 
     		android:icon="@drawable/icon" 
-    		android:label="@string/app_name">
+    		android:label="@string/app_name"
+            >
+    		
+<!--      <activity 
+    		android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale" 
+    		android:label="@string/app_name" 
+    		android:name="com.reb.rebDemo.SplashScreen"
+    		android:theme="@android:style/Theme.Holo.NoActionBar.Fullscreen">
+    		<intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+    		</intent-filter>
+
+    	</activity> -->
     	
     	<activity 
     		android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale" 
     		android:label="@string/app_name" 
     		android:name="com.reb.rebDemo.REBOnline"
     		android:theme="@android:style/Theme.Holo.NoActionBar.Fullscreen">
+    		
+    	    <!-- add to open app from links belones to rebonline.com.au -->
+    	    <intent-filter>
+		        <action android:name="android.intent.action.VIEW" />
+		        <category android:name="android.intent.category.DEFAULT" />
+		        <category android:name="android.intent.category.BROWSABLE" />
+		        <data android:scheme="http" />
+		        <data android:scheme="https" />
+		        <data android:host="www.rebonline.com.au" />
+		        <data android:pathPrefix="/" />
+
+		</intent-filter>
+
+
     		<intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
-    		</intent-filter>
+    		</intent-filter> 
+  
     	</activity>
     	<activity 
     		android:name="com.plugin.gcm.PushHandlerActivity"/>
