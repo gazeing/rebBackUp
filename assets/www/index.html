@@ -221,19 +221,19 @@
     if(Connection.NONE === networkState ){
       navigator.notification.alert(states[networkState],
        function(button){console.log('Offline!!!');},
-       'No Network Connection',
+       'No Network Connection, we are going to offline mode.',
        'OK'
        );
       console.log('No network Connection!!!');
-                //ref = window.open(failurePageURL,'_blank','location=yes,toolbar=no,hidden=yes');
-                //timeOutPeriod=100;
-                //addInAppBrowserListeners(ref,timeOutPeriod);
+        ref = window.open(loadURL,'_blank','location=no,toolbar=no,hidden=no');
+        addInAppBrowserListeners(ref,timeOutPeriod);
+        // addSocialLinkListeners(ref);
               }else{
                 console.log('Network Connection Available...');
 				//alert(loadURL);
-        ref = window.open(loadURL,'_blank','location=no,toolbar=no,hidden=yes');
+        ref = window.open(loadURL,'_blank','location=no,toolbar=no,hidden=no');
         addInAppBrowserListeners(ref,timeOutPeriod);
-        addSocialLinkListeners(ref);
+        // addSocialLinkListeners(ref);
 
       }
     }
@@ -304,7 +304,8 @@
 								//alert(GCMRegId);
 								jsScript="localStorage.setItem('registrationId','"+GCMRegId+"');";
 								if(Connection.NONE===navigator.connection.type){
-									jsScript="alert('No Network Connection');";
+                  console.log('No Network Connection. Google Cloud Messaging stop working.');
+									// jsScript="alert('No Network Connection. Google Cloud Messaging stop working.');";
 								}
 								ref.executeScript({ code: jsScript });
 								ref.show();
